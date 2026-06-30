@@ -30,7 +30,7 @@ function SheetOverlay({
   return (
     <DialogPrimitive.Overlay
       className={cn(
-        "fixed inset-0 z-50 bg-black/40 transition-opacity data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
+        "fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-sheet-fade-in data-[state=closed]:animate-sheet-fade-out",
         className,
       )}
       {...props}
@@ -54,15 +54,15 @@ function SheetContent({
       <SheetOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "fixed z-50 flex flex-col gap-4 border-border bg-background p-6 shadow-lg transition-transform duration-300 ease-in-out",
+          "fixed z-50 flex flex-col gap-4 border-border bg-background p-6 shadow-lg",
           side === "right" &&
-            "inset-y-0 right-0 h-full w-full max-w-xs border-l data-[state=closed]:translate-x-full data-[state=open]:translate-x-0",
+            "inset-y-0 right-0 h-full w-full max-w-xs border-l data-[state=open]:animate-sheet-in-from-right data-[state=closed]:animate-sheet-out-to-right",
           side === "left" &&
-            "inset-y-0 left-0 h-full w-full max-w-xs border-r data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0",
+            "inset-y-0 left-0 h-full w-full max-w-xs border-r data-[state=open]:animate-sheet-in-from-left data-[state=closed]:animate-sheet-out-to-left",
           side === "top" &&
-            "inset-x-0 top-0 border-b data-[state=closed]:-translate-y-full data-[state=open]:translate-y-0",
+            "inset-x-0 top-0 border-b data-[state=open]:animate-sheet-in-from-top data-[state=closed]:animate-sheet-out-to-top",
           side === "bottom" &&
-            "inset-x-0 bottom-0 border-t data-[state=closed]:translate-y-full data-[state=open]:translate-y-0",
+            "inset-x-0 bottom-0 border-t data-[state=open]:animate-sheet-in-from-bottom data-[state=closed]:animate-sheet-out-to-bottom",
           className,
         )}
         {...props}

@@ -33,7 +33,7 @@ export function CompanySettingsForm({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="space-y-6" encType="multipart/form-data">
+        <form action={formAction} className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="companyName">Company name</Label>

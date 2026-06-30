@@ -84,7 +84,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                       <h2 className="font-medium">
                         {user.fullName || "Unnamed user"}
                       </h2>
-                      {user.isAdmin ? <Badge>Admin</Badge> : null}
+                      {user.isAdmin ? (
+                        <Badge>
+                          {user.email.toLowerCase() === "admin@mpdee.co.uk"
+                            ? "Developer"
+                            : "Admin"}
+                        </Badge>
+                      ) : null}
                       {user.emailConfirmedAt ? (
                         <Badge className="border-primary/30 text-primary">
                           Confirmed

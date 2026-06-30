@@ -1,0 +1,4 @@
+{
+  "task.allowAutomaticTasks": "off",
+  "npm.autoDetect": "off"
+}

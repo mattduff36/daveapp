@@ -1,0 +1,28 @@
+---
+description: Dev server is manual-only; agents must not start or restart it
+alwaysApply: true
+---
+
+# Dev server — manual control only
+
+The user starts and stops the Next.js dev server themselves. Do not auto-start it.
+
+## Never do this
+
+- Do not run `npm run dev`, `next dev`, or any variant (including background shells with `block_until_ms: 0`).
+- Do not restart the dev server after the user kills it.
+- Do not start a dev server to "verify" UI changes, reproduce bugs, or run browser tests unless the user explicitly asks in that message.
+
+## What to do instead
+
+- Use `npm run build` for compile/type verification.
+- Use `npm run test` for unit tests.
+- If a running server is required and the user has not started one, ask them to run `npm run dev` in their terminal, or use production mode (`npm run build && npm run start`) only when they explicitly request it.
+
+## Manual start (user only)
+
+```bash
+npm run dev
+```
+
+Runs on http://localhost:4000
