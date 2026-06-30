@@ -35,7 +35,13 @@ npm install
 cp .env.example .env.local
 ```
 
-3. Create a Supabase project and apply the migration in [`supabase/migrations/001_initial_schema.sql`](supabase/migrations/001_initial_schema.sql).
+3. Create a Supabase project and apply migrations:
+
+```bash
+npm run db:migrate
+```
+
+This runs the SQL files in [`supabase/migrations`](supabase/migrations) against the Postgres credentials in `.env.local`.
 
 4. Configure Resend with a verified sender domain.
 
@@ -49,8 +55,9 @@ npm run dev
 
 | Variable | Purpose |
 | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, or `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase public API key |
+| `POSTGRES_HOST` / `POSTGRES_URL_NON_POOLING` | Database connection for migration script |
 | `RESEND_API_KEY` | Resend API key for report email delivery |
 | `RESEND_FROM_EMAIL` | Verified sender address for outgoing reports |
 
