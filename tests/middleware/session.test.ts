@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { updateSession } from "@/lib/supabase/middleware";
+import { TEST_USER_ID } from "../fixtures/survey";
 
 const getUser = vi.fn();
 
@@ -36,7 +37,7 @@ describe("updateSession middleware", () => {
 
   it("redirects authenticated users away from auth routes", async () => {
     getUser.mockResolvedValue({
-      data: { user: { id: "user-1", email: "user@example.com" } },
+      data: { user: { id: TEST_USER_ID, email: "user@example.com" } },
     });
 
     const response = await updateSession(
@@ -49,7 +50,7 @@ describe("updateSession middleware", () => {
 
   it("allows authenticated users to access protected routes", async () => {
     getUser.mockResolvedValue({
-      data: { user: { id: "user-1", email: "user@example.com" } },
+      data: { user: { id: TEST_USER_ID, email: "user@example.com" } },
     });
 
     const response = await updateSession(

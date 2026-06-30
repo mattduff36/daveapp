@@ -6,46 +6,7 @@ import {
   buildRecommendations,
   buildReportDraft,
 } from "@/lib/survey/report-text";
-import type { Survey, SurveyArea } from "@/lib/survey/types";
-
-const baseSurvey: Survey = {
-  id: "survey-1",
-  user_id: "user-1",
-  reference_number: "REF-001",
-  property_address: "12 Example Street",
-  property_type: "Detached house",
-  storeys: 2,
-  has_garage: true,
-  garage_type: "Detached garage",
-  attachment_type: "Detached",
-  construction_type: "Cavity masonry",
-  instructing_party: "Homeowner",
-  engineer_name: "A. Engineer",
-  current_step: 3,
-  status: "complete",
-  executive_summary: null,
-  introduction: null,
-  conclusions: null,
-  recommendations: null,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-};
-
-function makeArea(
-  overrides: Partial<SurveyArea> & Pick<SurveyArea, "name" | "condition_rating">,
-): SurveyArea {
-  return {
-    id: `area-${overrides.name}`,
-    survey_id: baseSurvey.id,
-    user_id: baseSurvey.user_id,
-    area_type: "internal",
-    notes: "Crack noted above window.",
-    sort_order: 0,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    ...overrides,
-  };
-}
+import { baseSurvey, makeArea } from "../../../tests/fixtures/survey";
 
 describe("report text generation", () => {
   it("escalates executive summary language for significant defects", () => {

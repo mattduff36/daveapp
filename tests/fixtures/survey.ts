@@ -4,6 +4,15 @@ export const TEST_USER_ID = "11111111-1111-4111-8111-111111111111";
 export const TEST_SURVEY_ID = "22222222-2222-4222-8222-222222222222";
 export const TEST_AREA_ID = "33333333-3333-4333-8333-333333333333";
 export const TEST_PHOTO_ID = "44444444-4444-4444-8444-444444444444";
+export const TEST_COMPANY_ID = "55555555-5555-4555-8555-555555555555";
+
+export const TEST_IDS = [
+  TEST_USER_ID,
+  TEST_SURVEY_ID,
+  TEST_AREA_ID,
+  TEST_PHOTO_ID,
+  TEST_COMPANY_ID,
+] as const;
 
 export const baseSurvey: Survey = {
   id: TEST_SURVEY_ID,
@@ -29,7 +38,7 @@ export const baseSurvey: Survey = {
 };
 
 export const baseCompany: CompanySettings = {
-  id: "company-1",
+  id: TEST_COMPANY_ID,
   user_id: TEST_USER_ID,
   company_name: "Example Surveyors Ltd",
   company_address: "1 Survey Lane",
