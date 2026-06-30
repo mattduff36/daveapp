@@ -81,52 +81,6 @@ function mapPhoto(row: SurveyPhoto): SurveyPhoto {
   return row;
 }
 
-export async function signUpAction(formData: FormData) {
-  const supabase = await createClient();
-  const email = String(formData.get("email") || "")
-    .trim()
-    .toLowerCase();
-  const password = String(formData.get("password") || "");
-  const fullName = String(formData.get("fullName") || "");
-
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: { full_name: fullName },
-    },
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  return { success: true, email };
-}
-
-export async function signInAction(formData: FormData) {
-  const supabase = await createClient();
-  const email = String(formData.get("email") || "");
-  const password = String(formData.get("password") || "");
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  redirect("/dashboard");
-}
-
-export async function signOutAction() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect("/login");
-}
-
 export async function getCompanySettings(): Promise<CompanySettings | null> {
   const user = await requireUser();
   const supabase = await createClient();

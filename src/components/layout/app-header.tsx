@@ -1,11 +1,9 @@
 import Link from "next/link";
-import { LogOut, Settings, ShieldCheck } from "lucide-react";
-import { signOutAction } from "@/lib/actions/survey-actions";
+import { AppHeaderNav } from "@/components/layout/app-header-nav";
 import { getCompanySettings } from "@/lib/actions/survey-actions";
 import { getSignedAssetUrl } from "@/lib/actions/survey-actions";
 import { isAdminUser } from "@/lib/admin/auth";
 import { getUser } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
 
 interface AppHeaderProps {
   title: string;
@@ -21,8 +19,8 @@ export async function AppHeader({ title, subtitle }: AppHeaderProps) {
 
   return (
     <header className="border-b border-border/80 bg-card/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
-        <div className="flex items-center gap-4">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4">
+        <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
           {logoUrl ? (
             <Link
               aria-label="Go to dashboard"
@@ -45,34 +43,19 @@ export async function AppHeader({ title, subtitle }: AppHeaderProps) {
               DS
             </Link>
           )}
-          <div>
-            <p className="font-serif text-xl font-semibold text-foreground">{title}</p>
+          <div className="min-w-0">
+            <p className="truncate font-serif text-lg font-semibold text-foreground sm:text-xl">
+              {title}
+            </p>
             {subtitle ? (
-              <p className="text-sm text-muted-foreground">{subtitle}</p>
+              <p className="line-clamp-2 text-xs text-muted-foreground sm:text-sm">
+                {subtitle}
+              </p>
             ) : null}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {isAdmin ? (
-            <Button asChild variant="outline">
-              <Link href="/admin">
-                <ShieldCheck className="h-4 w-4" />
-                Admin
-              </Link>
-            </Button>
-          ) : null}
-          <Button asChild variant="outline">
-            <Link href="/settings">
-              <Settings className="h-4 w-4" />
-              Settings
-            </Link>
-          </Button>
-          <form action={signOutAction}>
-            <Button type="submit" variant="ghost">
-              <LogOut className="h-4 w-4" />
-              Sign out
-            </Button>
-          </form>
+        <div className="shrink-0">
+          <AppHeaderNav isAdmin={isAdmin} />
         </div>
       </div>
     </header>

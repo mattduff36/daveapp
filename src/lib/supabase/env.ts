@@ -28,6 +28,6 @@ export function getAppUrl() {
     process.env.NEXT_PUBLIC_SITE_URL ??
     process.env.VERCEL_PROJECT_PRODUCTION_URL ??
     process.env.VERCEL_URL ??
-    "http://localhost:3000"
+    "http://localhost:4000"
   ).replace(/^([^h])/, "https://$1");
 }

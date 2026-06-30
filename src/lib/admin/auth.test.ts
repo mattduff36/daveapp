@@ -3,12 +3,12 @@ import { ADMIN_EMAILS, isAdminUser } from "@/lib/admin/auth";
 
 describe("admin auth", () => {
   it("lists approved admin emails", () => {
-    expect(ADMIN_EMAILS).toContain("mattduff36@gmail.com");
+    expect(ADMIN_EMAILS).toContain("admin@mpdee.co.uk");
     expect(ADMIN_EMAILS).toContain("david.marshall@curtins.com");
   });
 
   it("accepts approved admin emails case-insensitively", () => {
-    expect(isAdminUser({ email: "MattDuff36@gmail.com" })).toBe(true);
+    expect(isAdminUser({ email: "Admin@mpdee.co.uk" })).toBe(true);
     expect(isAdminUser({ email: "david.marshall@curtins.com" })).toBe(true);
   });
 

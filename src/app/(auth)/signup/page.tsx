@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { signUpAction } from "@/lib/actions/survey-actions";
+import { signUpAction } from "@/lib/actions/auth-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
