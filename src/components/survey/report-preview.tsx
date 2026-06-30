@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { getPhotosForArea, groupAreasByType } from "@/lib/report/area-sections";
 import type { CompanySettings, Survey, SurveyArea, SurveyPhoto } from "@/lib/survey/types";
 import {
   buildAreaObservation,
@@ -30,6 +31,52 @@ function ReportSection({
   );
 }
 
+function AreaObservation({
+  area,
+  photos,
+  photoUrls,
+}: {
+  area: SurveyArea;
+  photos: SurveyPhoto[];
+  photoUrls: Record<string, string>;
+}) {
+  const areaPhotos = getPhotosForArea(photos, area.id);
+
+  return (
+    <div className="report-area space-y-3">
+      <h4 className="font-semibold">{area.name}</h4>
+      <p className="whitespace-pre-wrap">{buildAreaObservation(area)}</p>
+      {areaPhotos.length > 0 ? (
+        <div className="grid gap-4">
+          {areaPhotos.map((photo) => {
+            const url = resolvePhotoUrl(photo, photoUrls);
+
+            return (
+              <figure key={photo.id} className="report-photo space-y-2">
+                {photo.caption ? (
+                  <figcaption className="text-sm text-muted-foreground">
+                    {photo.caption}
+                  </figcaption>
+                ) : null}
+                {url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    alt={photo.caption || area.name}
+                    className="max-h-[420px] w-full rounded-lg border border-border object-contain"
+                    src={url}
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground">Photo unavailable.</p>
+                )}
+              </figure>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function ReportPreview({
   survey,
   areas,
@@ -37,8 +84,7 @@ export function ReportPreview({
   photoUrls,
   company,
 }: ReportPreviewProps) {
-  const internalAreas = areas.filter((area) => area.area_type === "internal");
-  const externalAreas = areas.filter((area) => area.area_type === "external");
+  const { internalAreas, externalAreas } = groupAreasByType(areas);
   const address = survey.property_address || "Structural Survey Report";
   const reference = survey.reference_number || "Draft";
 
@@ -106,10 +152,12 @@ export function ReportPreview({
           <div className="space-y-4">
             <h3 className="report-subheading">Internal Areas</h3>
             {internalAreas.map((area) => (
-              <div key={area.id} className="space-y-2">
-                <h4 className="font-semibold">{area.name}</h4>
-                <p className="whitespace-pre-wrap">{buildAreaObservation(area)}</p>
-              </div>
+              <AreaObservation
+                key={area.id}
+                area={area}
+                photoUrls={photoUrls}
+                photos={photos}
+              />
             ))}
           </div>
         ) : null}
@@ -118,10 +166,12 @@ export function ReportPreview({
           <div className="space-y-4">
             <h3 className="report-subheading">External Elevations</h3>
             {externalAreas.map((area) => (
-              <div key={area.id} className="space-y-2">
-                <h4 className="font-semibold">{area.name}</h4>
-                <p className="whitespace-pre-wrap">{buildAreaObservation(area)}</p>
-              </div>
+              <AreaObservation
+                key={area.id}
+                area={area}
+                photoUrls={photoUrls}
+                photos={photos}
+              />
             ))}
           </div>
         ) : null}

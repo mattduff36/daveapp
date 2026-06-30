@@ -12,6 +12,7 @@ import {
   WidthType,
 } from "docx";
 import type { CompanySettings, Survey, SurveyArea, SurveyPhoto } from "@/lib/survey/types";
+import { getPhotosForArea, groupAreasByType } from "@/lib/report/area-sections";
 import {
   buildAreaObservation,
   buildPropertyDescription,
@@ -51,6 +52,43 @@ function splitLines(text: string) {
   return text.split(/\n+/).filter(Boolean);
 }
 
+function imageType(buffer: Buffer) {
+  return buffer[0] === 0xff && buffer[1] === 0xd8 ? "jpg" : "png";
+}
+
+function appendAreaSection(
+  sections: Paragraph[],
+  area: SurveyArea,
+  photos: SurveyPhoto[],
+  photoBuffers: Map<string, Buffer>,
+) {
+  sections.push(
+    paragraph(area.name, { heading: HeadingLevel.HEADING_3 }),
+    ...splitLines(buildAreaObservation(area)).map((line) => paragraph(line)),
+  );
+
+  for (const photo of getPhotosForArea(photos, area.id)) {
+    if (photo.caption) {
+      sections.push(paragraph(photo.caption));
+    }
+
+    const buffer = photoBuffers.get(photo.id);
+    if (buffer) {
+      sections.push(
+        new Paragraph({
+          children: [
+            new ImageRun({
+              data: buffer,
+              transformation: { width: 420, height: 315 },
+              type: imageType(buffer),
+            }),
+          ],
+        }),
+      );
+    }
+  }
+}
+
 export async function buildSurveyDocx({
   survey,
   areas,
@@ -59,8 +97,7 @@ export async function buildSurveyDocx({
   photoBuffers,
   logoBuffer,
 }: BuildDocxInput) {
-  const internalAreas = areas.filter((area) => area.area_type === "internal");
-  const externalAreas = areas.filter((area) => area.area_type === "external");
+  const { internalAreas, externalAreas } = groupAreasByType(areas);
   const address = survey.property_address || "Structural Survey Report";
   const ref = survey.reference_number || "Draft";
 
@@ -125,20 +162,14 @@ export async function buildSurveyDocx({
   if (internalAreas.length > 0) {
     sections.push(paragraph("Internal Areas", { heading: HeadingLevel.HEADING_2 }));
     for (const area of internalAreas) {
-      sections.push(
-        paragraph(area.name, { heading: HeadingLevel.HEADING_3 }),
-        ...splitLines(buildAreaObservation(area)).map((line) => paragraph(line)),
-      );
+      appendAreaSection(sections, area, photos, photoBuffers);
     }
   }
 
   if (externalAreas.length > 0) {
     sections.push(paragraph("External Elevations", { heading: HeadingLevel.HEADING_2 }));
     for (const area of externalAreas) {
-      sections.push(
-        paragraph(area.name, { heading: HeadingLevel.HEADING_3 }),
-        ...splitLines(buildAreaObservation(area)).map((line) => paragraph(line)),
-      );
+      appendAreaSection(sections, area, photos, photoBuffers);
     }
   }
 
@@ -168,7 +199,7 @@ export async function buildSurveyDocx({
             new ImageRun({
               data: buffer,
               transformation: { width: 420, height: 315 },
-              type: buffer[0] === 0xff && buffer[1] === 0xd8 ? "jpg" : "png",
+              type: imageType(buffer),
             }),
           ],
         }),

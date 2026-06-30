@@ -13,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ReviewReportStepProps {
@@ -154,9 +153,9 @@ export function ReviewReportStep({
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <CardTitle>Report builder</CardTitle>
+              <CardTitle>Edit narrative sections</CardTitle>
               <CardDescription>
-                Generate the full report, then edit conclusions and recommendations before export.
+                Generate the report draft, then refine the summary sections below.
               </CardDescription>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -221,9 +220,27 @@ export function ReviewReportStep({
               />
             </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <Separator />
+      <div className="print-report">
+        <ReportPreview
+          areas={areas}
+          company={company}
+          photoUrls={photoUrls}
+          photos={photos}
+          survey={previewSurvey}
+        />
+      </div>
 
+      <Card className="print-hidden">
+        <CardHeader>
+          <CardTitle>Export report</CardTitle>
+          <CardDescription>
+            Download, email, or print the full report including all room and elevation notes and photos.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button
               className="min-h-11 w-full sm:w-auto"
@@ -258,16 +275,6 @@ export function ReviewReportStep({
           </div>
         </CardContent>
       </Card>
-
-      <div className="print-report">
-        <ReportPreview
-          areas={areas}
-          company={company}
-          photoUrls={photoUrls}
-          photos={photos}
-          survey={previewSurvey}
-        />
-      </div>
     </div>
   );
 }
