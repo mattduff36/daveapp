@@ -10,6 +10,7 @@ Production Next.js app for structural engineers conducting visual domestic prope
 - Per-area condition ratings, notes, voice dictation, and photo capture/upload
 - Auto-save observations with debounced persistence
 - Company logo, address, and default engineer settings
+- Admin settings for `mattduff36@gmail.com`, including user list and account support actions
 - Generated report sections with editable conclusions and recommendations
 - Word (.docx) export
 - Server-side report emailing via Resend to a hidden default recipient
@@ -57,6 +58,7 @@ npm run dev
 | --- | --- |
 | `SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, or `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase public API key |
+| `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` | Server-only admin key for listing users and sending account support emails |
 | `POSTGRES_HOST` / `POSTGRES_URL_NON_POOLING` | Database connection for migration script |
 | `RESEND_API_KEY` | Resend API key for report email delivery |
 | `RESEND_FROM_EMAIL` | Verified sender address for outgoing reports |

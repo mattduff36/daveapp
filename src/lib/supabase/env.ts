@@ -14,3 +14,20 @@ export function getSupabaseAnonKey() {
     ""
   );
 }
+
+export function getSupabaseServiceRoleKey() {
+  return (
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.SUPABASE_SECRET_KEY ??
+    ""
+  );
+}
+
+export function getAppUrl() {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ??
+    process.env.VERCEL_URL ??
+    "http://localhost:3000"
+  ).replace(/^([^h])/, "https://$1");
+}
