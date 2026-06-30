@@ -77,7 +77,9 @@ function mapPhoto(row: SurveyPhoto): SurveyPhoto {
 
 export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
-  const email = String(formData.get("email") || "");
+  const email = String(formData.get("email") || "")
+    .trim()
+    .toLowerCase();
   const password = String(formData.get("password") || "");
   const fullName = String(formData.get("fullName") || "");
 
@@ -93,7 +95,7 @@ export async function signUpAction(formData: FormData) {
     return { error: error.message };
   }
 
-  redirect("/dashboard");
+  return { success: true, email };
 }
 
 export async function signInAction(formData: FormData) {
