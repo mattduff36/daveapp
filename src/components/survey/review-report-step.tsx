@@ -7,8 +7,8 @@ import {
   saveReportEditsAction,
   updateSurveyStepAction,
 } from "@/lib/actions/survey-actions";
-import { buildPropertyDescription } from "@/lib/survey/report-text";
-import type { Survey, SurveyArea } from "@/lib/survey/types";
+import type { CompanySettings, Survey, SurveyArea, SurveyPhoto } from "@/lib/survey/types";
+import { ReportPreview } from "@/components/survey/report-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,12 +19,18 @@ import { Textarea } from "@/components/ui/textarea";
 interface ReviewReportStepProps {
   survey: Survey;
   areas: SurveyArea[];
+  photos: SurveyPhoto[];
+  photoUrls: Record<string, string>;
+  company: CompanySettings | null;
   hasDefaultEmail: boolean;
 }
 
 export function ReviewReportStep({
   survey,
   areas,
+  photos,
+  photoUrls,
+  company,
   hasDefaultEmail,
 }: ReviewReportStepProps) {
   const [executiveSummary, setExecutiveSummary] = useState(
@@ -39,6 +45,13 @@ export function ReviewReportStep({
   const [isPending, startTransition] = useTransition();
 
   const uncoveredAreas = areas.filter((area) => !area.condition_rating);
+  const previewSurvey: Survey = {
+    ...survey,
+    executive_summary: executiveSummary,
+    introduction,
+    conclusions,
+    recommendations,
+  };
 
   function generateReport() {
     startTransition(async () => {
@@ -103,7 +116,7 @@ export function ReviewReportStep({
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="print-hidden">
         <CardHeader>
           <CardTitle>Coverage checklist</CardTitle>
           <CardDescription>
@@ -125,26 +138,43 @@ export function ReviewReportStep({
           ) : (
             <p className="text-sm text-primary">All areas have condition ratings.</p>
           )}
-          <Button disabled={isPending} onClick={goToReviewStep} type="button" variant="outline">
+          <Button
+            className="min-h-11 w-full sm:w-auto"
+            disabled={isPending}
+            onClick={goToReviewStep}
+            type="button"
+            variant="outline"
+          >
             Mark review step active
           </Button>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="print-hidden">
         <CardHeader>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <CardTitle>Report builder</CardTitle>
               <CardDescription>
                 Generate the full report, then edit conclusions and recommendations before export.
               </CardDescription>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button disabled={isPending} onClick={generateReport} type="button">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <Button
+                className="min-h-11 w-full sm:w-auto"
+                disabled={isPending}
+                onClick={generateReport}
+                type="button"
+              >
                 Generate report
               </Button>
-              <Button disabled={isPending} onClick={saveEdits} type="button" variant="outline">
+              <Button
+                className="min-h-11 w-full sm:w-auto"
+                disabled={isPending}
+                onClick={saveEdits}
+                type="button"
+                variant="outline"
+              >
                 Save edits
               </Button>
             </div>
@@ -153,15 +183,11 @@ export function ReviewReportStep({
         <CardContent className="space-y-6">
           {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
 
-          <section className="font-report space-y-2 rounded-xl border border-border bg-card p-6">
-            <h3 className="text-xl font-semibold">Property description</h3>
-            <p>{buildPropertyDescription(survey)}</p>
-          </section>
-
           <div className="grid gap-4">
             <div className="space-y-2">
               <Label htmlFor="executiveSummary">Executive summary</Label>
               <Textarea
+                className="min-h-28 text-base sm:text-sm"
                 id="executiveSummary"
                 onChange={(event) => setExecutiveSummary(event.target.value)}
                 value={executiveSummary}
@@ -170,6 +196,7 @@ export function ReviewReportStep({
             <div className="space-y-2">
               <Label htmlFor="introduction">Introduction</Label>
               <Textarea
+                className="min-h-28 text-base sm:text-sm"
                 id="introduction"
                 onChange={(event) => setIntroduction(event.target.value)}
                 value={introduction}
@@ -178,6 +205,7 @@ export function ReviewReportStep({
             <div className="space-y-2">
               <Label htmlFor="conclusions">Conclusions</Label>
               <Textarea
+                className="min-h-28 text-base sm:text-sm"
                 id="conclusions"
                 onChange={(event) => setConclusions(event.target.value)}
                 value={conclusions}
@@ -186,6 +214,7 @@ export function ReviewReportStep({
             <div className="space-y-2">
               <Label htmlFor="recommendations">Recommendations</Label>
               <Textarea
+                className="min-h-28 text-base sm:text-sm"
                 id="recommendations"
                 onChange={(event) => setRecommendations(event.target.value)}
                 value={recommendations}
@@ -195,24 +224,50 @@ export function ReviewReportStep({
 
           <Separator />
 
-          <div className="flex flex-wrap gap-3">
-            <Button disabled={isPending} onClick={exportWord} type="button">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Button
+              className="min-h-11 w-full sm:w-auto"
+              disabled={isPending}
+              onClick={exportWord}
+              type="button"
+            >
               <Download className="h-4 w-4" />
               Export to Word
             </Button>
             {hasDefaultEmail ? (
-              <Button disabled={isPending} onClick={emailReport} type="button" variant="secondary">
+              <Button
+                className="min-h-11 w-full sm:w-auto"
+                disabled={isPending}
+                onClick={emailReport}
+                type="button"
+                variant="secondary"
+              >
                 <Mail className="h-4 w-4" />
                 Email report
               </Button>
             ) : null}
-            <Button onClick={() => window.print()} type="button" variant="outline">
+            <Button
+              className="min-h-11 w-full sm:w-auto"
+              onClick={() => window.print()}
+              type="button"
+              variant="outline"
+            >
               <Printer className="h-4 w-4" />
               Print / Save PDF
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      <div className="print-report">
+        <ReportPreview
+          areas={areas}
+          company={company}
+          photoUrls={photoUrls}
+          photos={photos}
+          survey={previewSurvey}
+        />
+      </div>
     </div>
   );
 }

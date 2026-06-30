@@ -2,23 +2,38 @@ import { Resend } from "resend";
 import { buildSurveyDocx, getReportFilename } from "@/lib/report/build-docx";
 import { getCompanySettings, getSurveyWithRelations } from "@/lib/actions/survey-actions";
 import { requireUser, createClient } from "@/lib/supabase/server";
+import type { SurveyPhoto } from "@/lib/survey/types";
 
 async function loadPhotoBuffers(
   userId: string,
-  storagePaths: string[],
+  photos: SurveyPhoto[],
 ): Promise<Map<string, Buffer>> {
   const supabase = await createClient();
   const photoBuffers = new Map<string, Buffer>();
 
   await Promise.all(
-    storagePaths.map(async (path) => {
-      if (!path.startsWith(`${userId}/`)) return;
+    photos.map(async (photo) => {
+      if (photo.photo_url) {
+        const response = await fetch(photo.photo_url);
+        if (response.ok) {
+          photoBuffers.set(
+            photo.id,
+            Buffer.from(await response.arrayBuffer()),
+          );
+        }
+        return;
+      }
+
+      if (!photo.storage_path?.startsWith(`${userId}/`)) {
+        return;
+      }
+
       const { data, error } = await supabase.storage
         .from("survey-assets")
-        .download(path);
+        .download(photo.storage_path);
 
       if (error || !data) return;
-      photoBuffers.set(path, Buffer.from(await data.arrayBuffer()));
+      photoBuffers.set(photo.id, Buffer.from(await data.arrayBuffer()));
     }),
   );
 
@@ -34,10 +49,7 @@ export async function buildSurveyReportBuffer(surveyId: string) {
   }
 
   const company = await getCompanySettings();
-  const photoBuffers = await loadPhotoBuffers(
-    user.id,
-    survey.survey_photos.map((photo) => photo.storage_path),
-  );
+  const photoBuffers = await loadPhotoBuffers(user.id, survey.survey_photos);
 
   let logoBuffer: Buffer | undefined;
   if (company?.logo_path) {

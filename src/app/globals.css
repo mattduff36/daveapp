@@ -75,4 +75,67 @@ body {
   body {
     background: white;
   }
+
+  header,
+  .print-hidden {
+    display: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .print-report {
+    display: block !important;
+  }
+
+  .report-preview {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .report-section {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  .report-heading {
+    break-after: avoid-page;
+    page-break-after: avoid;
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  .report-subheading {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .report-photo {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  .report-photo img {
+    max-height: none;
+  }
+}
+
+@media screen {
+  .print-report {
+    margin-top: 1.5rem;
+  }
+}
+
+.report-heading {
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.report-subheading {
+  font-size: 1.1rem;
+  font-weight: 600;
 }

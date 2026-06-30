@@ -25,12 +25,21 @@ export const ATTACHMENT_TYPES = [
   "Adjoining",
 ] as const;
 
+export const GARAGE_TYPES = [
+  "Detached garage",
+  "Adjoining garage",
+  "Integral garage",
+] as const;
+
 export const CONSTRUCTION_TYPES = [
-  "Traditional masonry",
+  "Cavity masonry",
+  "Solid masonry",
+  "Stone",
   "Timber frame",
   "Steel frame",
   "Concrete frame",
   "Mixed / unknown",
+  "Other",
 ] as const;
 
 export const INTERNAL_AREA_PRESETS = [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import {
   addSurveyAreaAction,
@@ -23,31 +23,57 @@ interface AreasStepProps {
   onContinue: () => void;
 }
 
+function normalizeAreaName(name: string) {
+  return name.trim().toLowerCase();
+}
+
 export function AreasStep({ surveyId, areas, onContinue }: AreasStepProps) {
   const [customName, setCustomName] = useState("");
   const [customType, setCustomType] = useState<"internal" | "external">("internal");
+  const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const existingNames = useMemo(
+    () => new Set(areas.map((area) => normalizeAreaName(area.name))),
+    [areas],
+  );
+
   function addPreset(name: string, areaType: "internal" | "external") {
+    if (existingNames.has(normalizeAreaName(name))) {
+      setMessage(`${name} is already in the inspection list.`);
+      return;
+    }
+
+    setMessage(null);
     startTransition(async () => {
       const formData = new FormData();
       formData.set("surveyId", surveyId);
       formData.set("name", name);
       formData.set("areaType", areaType);
-      await addSurveyAreaAction(formData);
+      const result = await addSurveyAreaAction(formData);
+      setMessage(result?.error ?? null);
     });
   }
 
   function addCustomArea() {
     if (!customName.trim()) return;
 
+    if (existingNames.has(normalizeAreaName(customName))) {
+      setMessage(`${customName.trim()} is already in the inspection list.`);
+      return;
+    }
+
+    setMessage(null);
     startTransition(async () => {
       const formData = new FormData();
       formData.set("surveyId", surveyId);
       formData.set("name", customName.trim());
       formData.set("areaType", customType);
-      await addSurveyAreaAction(formData);
-      setCustomName("");
+      const result = await addSurveyAreaAction(formData);
+      if (!result?.error) {
+        setCustomName("");
+      }
+      setMessage(result?.error ?? null);
     });
   }
 
@@ -74,52 +100,69 @@ export function AreasStep({ surveyId, areas, onContinue }: AreasStepProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {message ? (
+            <p className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+              {message}
+            </p>
+          ) : null}
+
           <div>
             <p className="mb-3 text-sm font-medium">Internal rooms</p>
             <div className="flex flex-wrap gap-2">
-              {INTERNAL_AREA_PRESETS.map((preset) => (
-                <Button
-                  key={preset}
-                  disabled={isPending}
-                  onClick={() => addPreset(preset, "internal")}
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                >
-                  <Plus className="h-4 w-4" />
-                  {preset}
-                </Button>
-              ))}
+              {INTERNAL_AREA_PRESETS.map((preset) => {
+                const isAdded = existingNames.has(normalizeAreaName(preset));
+
+                return (
+                  <Button
+                    key={preset}
+                    className="min-h-11"
+                    disabled={isPending || isAdded}
+                    onClick={() => addPreset(preset, "internal")}
+                    size="sm"
+                    type="button"
+                    variant={isAdded ? "secondary" : "outline"}
+                  >
+                    <Plus className="h-4 w-4" />
+                    {preset}
+                  </Button>
+                );
+              })}
             </div>
           </div>
 
           <div>
             <p className="mb-3 text-sm font-medium">External elevations</p>
             <div className="flex flex-wrap gap-2">
-              {EXTERNAL_AREA_PRESETS.map((preset) => (
-                <Button
-                  key={preset}
-                  disabled={isPending}
-                  onClick={() => addPreset(preset, "external")}
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                >
-                  <Plus className="h-4 w-4" />
-                  {preset}
-                </Button>
-              ))}
+              {EXTERNAL_AREA_PRESETS.map((preset) => {
+                const isAdded = existingNames.has(normalizeAreaName(preset));
+
+                return (
+                  <Button
+                    key={preset}
+                    className="min-h-11"
+                    disabled={isPending || isAdded}
+                    onClick={() => addPreset(preset, "external")}
+                    size="sm"
+                    type="button"
+                    variant={isAdded ? "secondary" : "outline"}
+                  >
+                    <Plus className="h-4 w-4" />
+                    {preset}
+                  </Button>
+                );
+              })}
             </div>
           </div>
 
           <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
             <Input
+              className="h-11 text-base sm:h-10 sm:text-sm"
               onChange={(event) => setCustomName(event.target.value)}
               placeholder="Custom area name"
               value={customName}
             />
             <select
-              className="h-10 rounded-md border border-border bg-background px-3 text-sm"
+              className="h-11 rounded-md border border-border bg-background px-3 text-base sm:h-10 sm:text-sm"
               onChange={(event) =>
                 setCustomType(event.target.value as "internal" | "external")
               }
@@ -128,7 +171,12 @@ export function AreasStep({ surveyId, areas, onContinue }: AreasStepProps) {
               <option value="internal">Internal</option>
               <option value="external">External</option>
             </select>
-            <Button disabled={isPending} onClick={addCustomArea} type="button">
+            <Button
+              className="min-h-11"
+              disabled={isPending}
+              onClick={addCustomArea}
+              type="button"
+            >
               Add custom
             </Button>
           </div>
@@ -149,13 +197,14 @@ export function AreasStep({ surveyId, areas, onContinue }: AreasStepProps) {
             areas.map((area) => (
               <div
                 key={area.id}
-                className="flex items-center justify-between rounded-lg border border-border px-4 py-3"
+                className="flex flex-col gap-3 rounded-lg border border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <p className="font-medium">{area.name}</p>
                   <Badge className="mt-1 capitalize">{area.area_type}</Badge>
                 </div>
                 <Button
+                  className="min-h-11 w-full sm:w-auto"
                   disabled={isPending}
                   onClick={() => removeArea(area.id)}
                   size="sm"
@@ -170,6 +219,7 @@ export function AreasStep({ surveyId, areas, onContinue }: AreasStepProps) {
           )}
 
           <Button
+            className="min-h-11 w-full sm:w-auto"
             disabled={isPending || areas.length === 0}
             onClick={continueToSurvey}
             type="button"

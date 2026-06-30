@@ -6,6 +6,7 @@ import {
   getSignedAssetUrl,
   getSurveyWithRelations,
 } from "@/lib/actions/survey-actions";
+import { getPhotoLookupKey } from "@/lib/survey/photos";
 
 interface SurveyPageProps {
   params: Promise<{ id: string }>;
@@ -24,9 +25,16 @@ export default async function SurveyPage({ params }: SurveyPageProps) {
 
   await Promise.all(
     survey.survey_photos.map(async (photo) => {
-      const url = await getSignedAssetUrl(photo.storage_path);
-      if (url) {
-        photoUrls[photo.storage_path] = url;
+      if (photo.photo_url) {
+        photoUrls[getPhotoLookupKey(photo)] = photo.photo_url;
+        return;
+      }
+
+      if (photo.storage_path) {
+        const url = await getSignedAssetUrl(photo.storage_path);
+        if (url) {
+          photoUrls[getPhotoLookupKey(photo)] = url;
+        }
       }
     }),
   );

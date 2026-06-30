@@ -151,7 +151,7 @@ export async function buildSurveyDocx({
   );
 
   for (const photo of photos) {
-    const buffer = photoBuffers.get(photo.storage_path);
+    const buffer = photoBuffers.get(photo.id);
     const area = areas.find((item) => item.id === photo.area_id);
     sections.push(
       paragraph(area ? `${area.name}` : "General", { heading: HeadingLevel.HEADING_3 }),

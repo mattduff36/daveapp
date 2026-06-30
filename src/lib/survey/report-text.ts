@@ -108,7 +108,9 @@ export function buildPropertyDescription(survey: Survey) {
     survey.storeys != null && `Storeys: ${survey.storeys}.`,
     survey.attachment_type && `Attachment: ${survey.attachment_type}.`,
     survey.has_garage != null &&
-      `Garage: ${survey.has_garage ? "Yes" : "No"}.`,
+      `Garage: ${survey.has_garage ? "Yes" : "No"}${
+        survey.has_garage && survey.garage_type ? ` (${survey.garage_type})` : ""
+      }.`,
     survey.construction_type &&
       `Construction: ${survey.construction_type}.`,
   ].filter(Boolean);

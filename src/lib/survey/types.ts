@@ -39,6 +39,7 @@ export interface Survey {
   property_type: string | null;
   storeys: number | null;
   has_garage: boolean | null;
+  garage_type: string | null;
   attachment_type: string | null;
   construction_type: string | null;
   instructing_party: string | null;
@@ -71,7 +72,11 @@ export interface SurveyPhoto {
   survey_id: string;
   area_id: string | null;
   user_id: string;
-  storage_path: string;
+  storage_path: string | null;
+  photo_url: string | null;
+  cloudinary_public_id: string | null;
+  width: number | null;
+  height: number | null;
   caption: string | null;
   sort_order: number;
   created_at: string;

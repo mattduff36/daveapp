@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient, requireUser } from "@/lib/supabase/server";
+import {
+  deleteCloudinaryPhoto,
+  isCloudinaryConfigured,
+  uploadSurveyPhotoToCloudinary,
+} from "@/lib/cloudinary/upload";
 import { buildReportDraft } from "@/lib/survey/report-text";
 import type {
   AreaType,
@@ -22,6 +27,7 @@ const propertySchema = z.object({
   propertyType: z.string().min(1),
   storeys: z.coerce.number().int().min(1).max(10),
   hasGarage: z.enum(["yes", "no"]),
+  garageType: z.string().optional(),
   attachmentType: z.string().min(1),
   constructionType: z.string().min(1),
   instructingParty: z.string().optional(),
@@ -339,6 +345,7 @@ export async function savePropertyStepAction(formData: FormData) {
     propertyType: formData.get("propertyType"),
     storeys: formData.get("storeys"),
     hasGarage: formData.get("hasGarage"),
+    garageType: formData.get("garageType") || undefined,
     attachmentType: formData.get("attachmentType"),
     constructionType: formData.get("constructionType"),
     instructingParty: formData.get("instructingParty") || undefined,
@@ -354,6 +361,8 @@ export async function savePropertyStepAction(formData: FormData) {
       property_type: parsed.propertyType,
       storeys: parsed.storeys,
       has_garage: parsed.hasGarage === "yes",
+      garage_type:
+        parsed.hasGarage === "yes" ? parsed.garageType || null : null,
       attachment_type: parsed.attachmentType,
       construction_type: parsed.constructionType,
       instructing_party: parsed.instructingParty || null,
@@ -388,6 +397,17 @@ export async function addSurveyAreaAction(formData: FormData) {
     .eq("survey_id", parsed.surveyId)
     .order("sort_order", { ascending: false })
     .limit(1);
+
+  const { data: duplicateArea } = await supabase
+    .from("survey_areas")
+    .select("id")
+    .eq("survey_id", parsed.surveyId)
+    .ilike("name", parsed.name.trim())
+    .maybeSingle();
+
+  if (duplicateArea) {
+    return { error: "An area with this name already exists." };
+  }
 
   const nextSortOrder = (existingAreas?.[0]?.sort_order ?? -1) + 1;
 
@@ -468,10 +488,52 @@ export async function uploadSurveyPhotoAction(formData: FormData) {
     return { error: "Photo upload requires a survey, area, and file." };
   }
 
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const { data: existingPhotos } = await supabase
+    .from("survey_photos")
+    .select("sort_order")
+    .eq("survey_id", surveyId)
+    .eq("area_id", areaId)
+    .order("sort_order", { ascending: false })
+    .limit(1);
+
+  const nextSortOrder = (existingPhotos?.[0]?.sort_order ?? -1) + 1;
+
+  if (isCloudinaryConfigured()) {
+    try {
+      const upload = await uploadSurveyPhotoToCloudinary(buffer, user.id, surveyId);
+
+      const { error } = await supabase.from("survey_photos").insert({
+        survey_id: surveyId,
+        area_id: areaId,
+        user_id: user.id,
+        photo_url: upload.secure_url,
+        cloudinary_public_id: upload.public_id,
+        width: upload.width,
+        height: upload.height,
+        caption: caption || null,
+        sort_order: nextSortOrder,
+      });
+
+      if (error) {
+        await deleteCloudinaryPhoto(upload.public_id);
+        return { error: error.message };
+      }
+
+      revalidatePath(`/surveys/${surveyId}`);
+      return { success: true };
+    } catch (error) {
+      return {
+        error:
+          error instanceof Error ? error.message : "Cloudinary upload failed.",
+      };
+    }
+  }
+
   const extension = file.name.split(".").pop() || "jpg";
   const photoId = crypto.randomUUID();
   const storagePath = `${user.id}/${surveyId}/${photoId}.${extension}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
 
   const { error: uploadError } = await supabase.storage
     .from("survey-assets")
@@ -483,16 +545,6 @@ export async function uploadSurveyPhotoAction(formData: FormData) {
   if (uploadError) {
     return { error: uploadError.message };
   }
-
-  const { data: existingPhotos } = await supabase
-    .from("survey_photos")
-    .select("sort_order")
-    .eq("survey_id", surveyId)
-    .eq("area_id", areaId)
-    .order("sort_order", { ascending: false })
-    .limit(1);
-
-  const nextSortOrder = (existingPhotos?.[0]?.sort_order ?? -1) + 1;
 
   const { error } = await supabase.from("survey_photos").insert({
     survey_id: surveyId,
@@ -511,15 +563,47 @@ export async function uploadSurveyPhotoAction(formData: FormData) {
   return { success: true };
 }
 
+export async function updateSurveyPhotoCaptionAction(formData: FormData) {
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const photoId = String(formData.get("photoId") || "");
+  const surveyId = String(formData.get("surveyId") || "");
+  const caption = String(formData.get("caption") || "").trim();
+
+  if (!photoId || !surveyId) {
+    return { error: "Photo and survey are required." };
+  }
+
+  const { error } = await supabase
+    .from("survey_photos")
+    .update({ caption: caption || null })
+    .eq("id", photoId)
+    .eq("survey_id", surveyId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/surveys/${surveyId}`);
+  return { success: true };
+}
+
 export async function deleteSurveyPhotoAction(
   photoId: string,
   surveyId: string,
-  storagePath: string,
+  storagePath: string | null,
+  cloudinaryPublicId?: string | null,
 ) {
   const user = await requireUser();
   const supabase = await createClient();
 
-  await supabase.storage.from("survey-assets").remove([storagePath]);
+  if (cloudinaryPublicId) {
+    await deleteCloudinaryPhoto(cloudinaryPublicId);
+  } else if (storagePath) {
+    await supabase.storage.from("survey-assets").remove([storagePath]);
+  }
 
   const { error } = await supabase
     .from("survey_photos")
