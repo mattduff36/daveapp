@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildConclusions,
   buildExecutiveSummary,
+  buildPropertyDescription,
   buildRecommendations,
   buildReportDraft,
 } from "@/lib/survey/report-text";
@@ -89,5 +90,23 @@ describe("report text generation", () => {
     expect(draft.introduction).toContain("12 Example Street");
     expect(draft.conclusions.length).toBeGreaterThan(20);
     expect(draft.recommendations.length).toBeGreaterThan(20);
+  });
+
+  it("includes garage type in the property description", () => {
+    const description = buildPropertyDescription(baseSurvey);
+
+    expect(description).toContain("Garage: Yes (Detached garage)");
+    expect(description).toContain("Construction: Cavity masonry");
+  });
+
+  it("omits garage type when no garage is recorded", () => {
+    const description = buildPropertyDescription({
+      ...baseSurvey,
+      has_garage: false,
+      garage_type: null,
+    });
+
+    expect(description).toContain("Garage: No");
+    expect(description).not.toContain("Detached garage");
   });
 });
