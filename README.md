@@ -10,7 +10,7 @@ Production Next.js app for structural engineers conducting visual domestic prope
 - Per-area condition ratings, notes, voice dictation, and photo capture/upload
 - Auto-save observations with debounced persistence
 - Company logo, address, and default engineer settings
-- Admin settings for `mattduff36@gmail.com`, including user list and account support actions
+- Admin settings for approved admin emails, including user list and account support actions
 - Generated report sections with editable conclusions and recommendations
 - Word (.docx) export
 - Server-side report emailing via Resend to a hidden default recipient

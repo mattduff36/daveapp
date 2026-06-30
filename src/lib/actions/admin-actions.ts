@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireAdminUser } from "@/lib/admin/auth";
+import { isAdminUser, requireAdminUser } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAppUrl } from "@/lib/supabase/env";
 
@@ -59,7 +59,7 @@ export async function listAdminUsers(): Promise<AdminUserListItem[]> {
         createdAt: user.created_at,
         lastSignInAt: user.last_sign_in_at ?? null,
         emailConfirmedAt: user.email_confirmed_at ?? null,
-        isAdmin: email.toLowerCase() === "mattduff36@gmail.com",
+        isAdmin: isAdminUser({ email }),
       };
     })
     .sort((first, second) => first.email.localeCompare(second.email));

@@ -3,7 +3,10 @@ import "server-only";
 import type { User } from "@supabase/supabase-js";
 import { getUser } from "@/lib/supabase/server";
 
-export const ADMIN_EMAILS = ["mattduff36@gmail.com"] as const;
+export const ADMIN_EMAILS = [
+  "mattduff36@gmail.com",
+  "david.marshall@curtins.com",
+] as const;
 
 export function isAdminUser(user: Pick<User, "email"> | null | undefined) {
   if (!user?.email) return false;
